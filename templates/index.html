@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News Pulse Analyzer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <main class="shell">
+        <section class="hero panel">
+            <div class="hero-copy">
+                <p class="eyebrow">News Intelligence Desk</p>
+                <h1>Read the tone behind the headlines, not just the headlines.</h1>
+                <p class="lede">Analyze a live news topic, surface the terms dominating coverage, and review the overall editorial mood in a dashboard that feels closer to a newsroom brief than a classroom demo.</p>
+                <div class="hero-pills">
+                    <span>Live topic search</span>
+                    <span>Sentiment snapshot</span>
+                    <span>Keyword trend view</span>
+                </div>
+            </div>
+            <form method="post" class="query-card">
+                <p class="card-kicker">Run fresh coverage</p>
+                <label for="query">Search topic</label>
+                <div class="form-row">
+                    <input id="query" name="query" type="text" value="{{ query }}" placeholder="india, elections, cricket, technology">
+                    <button type="submit">Analyze Now</button>
+                </div>
+                <p class="helper">The analyzer fetches current articles, extracts recurring keywords from headlines, classifies sentiment, and renders a chart for quick review.</p>
+            </form>
+        </section>
+
+        {% if error %}
+        <section class="panel error-panel">
+            <p>{{ error }}</p>
+        </section>
+        {% endif %}
+
+        {% if keywords %}
+        <section class="overview-grid">
+            <article class="panel spotlight-panel">
+                <div class="panel-heading">
+                    <p class="eyebrow">Coverage Snapshot</p>
+                    <h2>{{ query|title }} in the current news cycle</h2>
+                </div>
+                <div class="spotlight-metrics">
+                    <div class="spotlight-card accent-card">
+                        <span>Total headlines</span>
+                        <strong>{{ sentiment_summary.total }}</strong>
+                    </div>
+                    <div class="spotlight-card">
+                        <span>Sources tracked</span>
+                        <strong>{{ summary.source_count }}</strong>
+                    </div>
+                    <div class="spotlight-card">
+                        <span>Top source</span>
+                        <strong class="text-value">{{ summary.top_source }}</strong>
+                    </div>
+                    <div class="spotlight-card">
+                        <span>Average polarity</span>
+                        <strong>{{ sentiment_summary.average }}</strong>
+                    </div>
+                </div>
+                <div class="timeline-card">
+                    <span>Coverage window</span>
+                    <strong>{{ summary.coverage_window }}</strong>
+                </div>
+            </article>
+
+            <article class="panel stats-panel">
+                <div class="panel-heading">
+                    <p class="eyebrow">Sentiment Split</p>
+                    <h2>How the headlines read</h2>
+                </div>
+                <div class="stat-row">
+                    <div class="stat-card positive">
+                        <span>Positive</span>
+                        <strong>{{ sentiment_summary.positive }}</strong>
+                    </div>
+                    <div class="stat-card negative">
+                        <span>Negative</span>
+                        <strong>{{ sentiment_summary.negative }}</strong>
+                    </div>
+                    <div class="stat-card neutral">
+                        <span>Neutral</span>
+                        <strong>{{ sentiment_summary.neutral }}</strong>
+                    </div>
+                </div>
+            </article>
+        </section>
+
+        <section class="results-grid">
+            <article class="panel keywords-panel">
+                <div class="panel-heading">
+                    <p class="eyebrow">Keyword Leaders</p>
+                    <h2>Key terms shaping coverage</h2>
+                </div>
+                <div class="keyword-list">
+                    {% for word, count in keywords %}
+                    <div class="keyword-item">
+                        <span>{{ word }}</span>
+                        <strong>{{ count }}</strong>
+                    </div>
+                    {% endfor %}
+                </div>
+            </article>
+
+            <article class="panel chart-panel">
+                <div class="panel-heading">
+                    <p class="eyebrow">Visual Breakdown</p>
+                    <h2>Keyword and sentiment chart</h2>
+                </div>
+                <img src="{{ chart_url }}" alt="Generated analysis chart" class="chart-image">
+            </article>
+        </section>
+
+        <section class="panel headlines-panel">
+            <div class="panel-heading">
+                <p class="eyebrow">Headline Feed</p>
+                <h2>Sampled articles from the fetched coverage</h2>
+            </div>
+            <div class="headline-list">
+                {% for article in summary.articles %}
+                <article class="headline-card">
+                    <div class="headline-meta">
+                        <span>{{ article.source }}</span>
+                        <span class="sentiment-badge sentiment-{{ article.sentiment_label|lower }}">{{ article.sentiment_label }}</span>
+                    </div>
+                    <h3>{{ article.title }}</h3>
+                    <p>{{ article.description }}</p>
+                    <div class="headline-footer">
+                        <span>{{ article.published_at }}</span>
+                        <a href="{{ article.url }}" target="_blank" rel="noopener noreferrer">Read article</a>
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+    </main>
+</body>
+</html>
